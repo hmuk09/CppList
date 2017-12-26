@@ -1,10 +1,13 @@
 #include <iostream>
 
-using namespace std;
+using std::cin;
+using std::cout;
+using std::swap;
+using std::endl;
 
-class Node {
-public:
-    int data;
+template <class T>
+struct Node {
+    T data;
     Node * next;
 
     Node()
@@ -12,19 +15,20 @@ public:
     , next(nullptr) {
     }
 
-    explicit Node(int data)
+    explicit Node(T data)
     : data(data)
     , next(nullptr) {
     }
 };
 
+template <class T>
 class List {
-    Node * first;
-    Node * last;
+    Node<T> * first;
+    Node<T> * last;
     size_t size;
-    bool root;
+    bool is_basic;
 
-    size_t distance(Node * first, Node * last) {
+    size_t distance(Node<T> * first, Node<T> * last) const {
         if (first == nullptr)
             return 0;
 
@@ -42,20 +46,20 @@ public:
     : first(nullptr)
     , last(nullptr)
     , size(0)
-    , root(true) {
+    , is_basic(true) {
     }
 
-    List(Node * first, Node * last)
+    List(Node<T> * first, Node<T> * last)
     : first(first)
     , last(last)
     , size(distance(first, last))
-    , root(false) {
+    , is_basic(false) {
     }
 
     ~List() {
-        if (root) {
+        if (is_basic) {
             while (first != last) {
-                Node *temp = first->next;
+                Node<T> *temp = first->next;
                 delete first;
                 first = temp;
             }
@@ -64,7 +68,7 @@ public:
     }
 
     void push_back(int x) {
-        auto * temp = new Node(x);
+        auto * temp = new Node<T>(x);
         if (size == 0) {
             first = temp;
         }
@@ -75,23 +79,12 @@ public:
         ++size;
     }
 
-    void sort() {
-        if (size == 1)
-            return;
-
-        Node * mid = first;
-        for (int i = 0; i < size / 2 - 1; ++i)
-            mid = mid->next;
-
-        List list1(first, mid), list2(mid->next, last);
-        list1.sort();
-        list2.sort();
-
+    void merge(List<T> list1, List<T> list2) {
         if (list1.first->data > list2.first->data)
             swap(list1, list2);
 
-        Node * it1 = list1.first;
-        Node * it2 = list2.first;
+        Node<T> * it1 = list1.first;
+        Node<T> * it2 = list2.first;
         bool flag = false;
         while (true) {
             while (!flag && it1 != list1.last && it1->next->data < it2->data) {
@@ -100,7 +93,7 @@ public:
             if (it1 == list1.last)
                 flag = true;
 
-            Node * temp = it2;
+            Node<T> * temp = it2;
             it2 = it2->next;
 
             temp->next = it1->next;
@@ -119,8 +112,23 @@ public:
             this->last = list1.last;
     }
 
-    void print() {
-        for (Node * it = first; it != last; it = it->next) {
+    void sort() {
+        if (size == 1)
+            return;
+
+        Node<T> * mid = first;
+        for (int i = 0; i < size / 2 - 1; ++i)
+            mid = mid->next;
+
+        List<T> list1(first, mid), list2(mid->next, last);
+        list1.sort();
+        list2.sort();
+
+        merge(list1, list2);
+    }
+
+    void print() const {
+        for (Node<T> * it = first; it != last; it = it->next) {
             cout << it->data << " ";
         }
         cout << last->data << endl;
@@ -128,11 +136,11 @@ public:
 };
 
 int main() {
-    int n;
-    List list;
+    size_t n = 0;
+    List<int> list;
     cin >> n;
 
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         int x;
         cin >> x;
         list.push_back(x);
